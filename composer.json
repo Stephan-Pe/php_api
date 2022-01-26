@@ -1,0 +1,13 @@
+{
+    "autoload": {
+        "psr-4": {
+            "": "src/"
+        }
+    },
+    "config": {
+        "disable-tls": false
+    },
+    "require": {
+        "vlucas/phpdotenv": "^5.4"
+    }
+}
