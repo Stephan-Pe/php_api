@@ -5,7 +5,6 @@ class Auth
     private int $user_id;
     public function __construct(private UserGateway $user_gateway)
     {
-
     }
     public function authenticateAPIKey(): bool
     {
@@ -14,7 +13,7 @@ class Auth
             echo json_encode(["message" => "Unauthorized"]);
             return false;
         }
-        
+
         $api_key = $_SERVER["HTTP_X_API_KEY"];
 
         $user = $this->user_gateway->getByAPIKey($api_key);
@@ -34,5 +33,35 @@ class Auth
     public function getUserID(): int
     {
         return $this->user_id;
+    }
+
+    public function authenticateAccessToken(): bool
+    {
+        if ( ! preg_match("/^Bearer\s+(.*)$/", $_SERVER["HTTP_AUTHORIZATION"], $matches)) {
+            http_response_code(400);
+            echo json_encode(["message" => "incomplete authorization"]);
+            return false;
+        }
+
+        $plain_text = base64_decode($matches[1], true);
+
+        if ($plain_text === false) {
+
+            http_response_code(400);
+            echo json_encode(["message" => "incomplete authorization"]);
+            return false;
+        }
+
+        $data = json_decode($plain_text, true);
+
+        if ($data === null) {
+            http_response_code(400);
+            echo json_encode(["message" => "invalid authorization"]);
+            return false;
+        }
+
+        $this->user_id = $data["id"];
+
+        return true;
     }
 }

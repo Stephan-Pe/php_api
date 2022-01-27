@@ -45,6 +45,16 @@ php > echo base64_decode($encoded);
 hello world
 php >
 ```
+## Test JWT Token function
+```
+php > $payload = ["id" => 123];
+php > require "src/JWTCodec.php";
+php > $codec = new JWTCodec;
+php > echo $codec->encode($payload);
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTIzfQ.fg6HKP-0gvXaJVk3CY5TtAV0268XAtFpj5dTOGBXvKg
+
+```
+
 
 ..to be continued 🙂
 

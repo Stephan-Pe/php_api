@@ -1,4 +1,4 @@
 .env
 composer.phar
 /vendor/
-composer.lock
+composer.locko 
