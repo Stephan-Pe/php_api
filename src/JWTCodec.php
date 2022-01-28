@@ -2,6 +2,10 @@
 
 class JWTCodec
 {
+    public function __construct(private string $key)
+    {
+        # code...
+    }
 
     public function encode(array $payload): string
     {
@@ -19,7 +23,7 @@ class JWTCodec
         $signature = hash_hmac(
             "sha256",
             $header . "." . $payload,
-            "7538782F413F442A472D4B6150645367566B5970337336763979244226452948",
+            $this->key,
             true
         );
 
@@ -28,12 +32,59 @@ class JWTCodec
         return $header . "." . $payload . "." . $signature;
     }
 
+    public function decode(string $token): array
+    {
+        # code...
+        if (preg_match(
+            "/^(?<header>.+)\.(?<payload>.+)\.(?<signature>.+)$/",
+            $token,
+            $matches
+        ) !== 1) {
+
+            throw new InvalidArgumentException("invalid token format");
+        }
+
+        $signature = hash_hmac(
+            "sha256",
+            $matches["header"] . "." . $matches["payload"],
+            $this->key,
+            true
+        );
+
+        $signature_from_token = $this->base64urlDecode($matches["signature"]);
+
+        if (!hash_equals($signature, $signature_from_token)) {
+            throw new InvalidSignatureException;
+        }
+
+        $payload = json_decode($this->base64urlDecode($matches["payload"]), true);
+
+        if ($payload["exp"] < time()) {
+            
+            throw new TokenExpiredException;
+        }
+
+        return $payload;
+    }
+
     private function base64urlEncode(string $text): string
     {
         return str_replace(
             ["+", "/", "="],
             ["-", "_", ""],
             base64_encode($text)
+        );
+    }
+
+    private function base64urlDecode(string $text): string
+    {
+        # code...
+        return base64_decode(
+            str_replace(
+                ["-", "_"],
+                ["+", "/"],
+                $text
+            )
         );
     }
 }

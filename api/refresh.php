@@ -1,4 +1,5 @@
-<?php
+<?php 
+
 
 declare(strict_types=1);
 
@@ -12,14 +13,24 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 
 $data = (array) json_decode(file_get_contents("php://input"), true); // php://input stream
 
-if (
-    !array_key_exists("username", $data) ||
-    !array_key_exists("password", $data)
-) {
+if ( ! array_key_exists("token", $data)) {
+    # code...
     http_response_code(400);
-    echo json_encode(["message" => "missing login credentials"]);
+    echo json_encode(["message" => "missing token"]);
     exit;
 }
+
+$codec = new JWTCodec($_ENV["SECRET_KEY"]);
+
+try {
+    $payload = $codec->decode($data["token"]);
+} catch (Exception) {
+    http_response_code(400);
+    echo json_encode(["message" => "invalid token"]);
+    exit;
+}
+
+$user_id = $payload["sub"];
 
 $database = new Database(
     $_ENV["DB_HOST"],
@@ -30,24 +41,19 @@ $database = new Database(
 
 $user_gateway = new UserGateway($database);
 
-$user = $user_gateway->getByUsername($data["username"]);
+$user = $user_gateway->getByID($user_id);
 
 if ($user === false) {
+
     http_response_code(401);
     echo json_encode(["message" => "invalid authentication"]);
     exit;
 }
-
-if (!password_verify($data["password"], $user["password_hash"])) {
-    http_response_code(401);
-    echo json_encode(["message" => "invalid authentication"]);
-    exit;
-}
-
-$codec = new JWTCodec($_ENV["SECRET_KEY"]);
 
 require __DIR__ . "/tokens.php";
 
 $refresh_token_gateway = new RefreshTokenGateway($database, $_ENV["SECRET_KEY"]);
+
+$refresh_token_gateway->delete($data["token"]);
 
 $refresh_token_gateway->create($refresh_token, $refresh_token_expiry);
