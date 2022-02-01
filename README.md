@@ -88,7 +88,22 @@ php > echo base64_decode($encoded);
 hello world
 php >
 ```
-## Test JWT Token function
+
+## [JWToken](https://jwt.io/introduction)
+
+JSON Webtokens consists of the following parts
+
+1) header
+2) payload
+3) signature
+
+1) The header contains the information about the algorithm and the type, as you can see in the JWTCodec.php on line 15 & 16 and they are base64 encoded.
+2) The payload wich is the second part contains the [claims](https://www.iana.org/assignments/jwt/jwt.xhtml). Claims in simple terms are the information you want to transport with the token. You should never include sensitive data in your token. As you can see in the example "Encrypt JWT Payload" you can easily read this informations.
+3) The signature secures the token by encrypting header and payload with your secret_key. As soon as the payload gets manipulated the token is no more valid.
+
+
+
+## Encrypt JWT Payload
 ```
 php > $payload = ["id" => 123];
 php > require "src/JWTCodec.php";
@@ -117,6 +132,8 @@ Array
 (
     [id] => 123
 )
+
+
 php > $payload = $codec->decode($token . "xxx");
 PHP Warning:  Uncaught Exception: signature doesn't match in /mnt/c/Projects/php_api/src/JWTCodec.php:52
 Stack trace:
