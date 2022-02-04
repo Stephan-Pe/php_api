@@ -89,7 +89,7 @@ hello world
 php >
 ```
 
-## [JWToken](https://jwt.io/introduction)
+## [JWToken](https://jwt.io/introduction) "jwt.io"
 
 JSON Webtokens consists of the following parts
 
@@ -150,6 +150,23 @@ Stack trace:
 php >
 
 ```
+
+
+## ADD relationship between database tables
+
+```
+MariaDB [api_db]> ALTER TABLE task
+                -> ADD user_id INT NOT NULL,
+                -> ADD INDEX (user_id);
+```
+
+```
+MariaDB [api_db]> ALTER TABLE task
+                -> ADD FOREIGN KEY (user_id)
+                -> REFERENCES user(id)
+                -> ON DELETE CASCADE ON UPDATE CASCADE;
+```
+
 
 
 ..to be continued 🙂
